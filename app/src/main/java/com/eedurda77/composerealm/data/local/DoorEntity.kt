@@ -6,13 +6,13 @@ import io.realm.annotations.Required
 
 open class DoorEntity (
     @PrimaryKey
-    var id: Int,
-    @Required
-    var isFavorite: Boolean,
-    @Required
-    var name: String,
-    @Required
+    var id: Int? = null,
+
+    var isFavorite: Boolean? = null,
+
+    var name: String? = null,
+
     var room: String? = null,
-    @Required
+
     var urlPath: String? = null
 ) : RealmObject()
