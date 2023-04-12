@@ -1,4 +1,4 @@
-package com.eedurda77.composerealm.ui.theme
+package com.eedurda77.composerealm.presentation.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Shapes
