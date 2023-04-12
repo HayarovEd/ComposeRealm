@@ -1,0 +1,58 @@
+package com.eedurda77.composerealm.data.mapper
+
+import com.eedurda77.composerealm.data.local.CameraEntity
+import com.eedurda77.composerealm.data.local.DoorEntity
+import com.eedurda77.composerealm.data.remote.dto.CamerasDto
+import com.eedurda77.composerealm.data.remote.dto.DoorsDto
+import com.eedurda77.composerealm.domain.models.CameraMain
+import com.eedurda77.composerealm.domain.models.DoorMain
+
+fun CamerasDto.convertToCamerasEntity(): List<CameraEntity> {
+    return this.dataCamera.cameras.map { camera ->
+        CameraEntity(
+            id = camera.id,
+            isFavorite = camera.favorites,
+            name = camera.name,
+            isRecord = camera.rec,
+            room = camera.room,
+            urlPath = camera.snapshot
+        )
+    }
+}
+
+fun DoorsDto.convertToDoorsEntity(): List<DoorEntity> {
+    return this.data.map { door ->
+        DoorEntity(
+            id = door.id,
+            isFavorite = door.favorites,
+            name = door.name,
+            room = door.room,
+            urlPath = door.snapshot
+        )
+    }
+}
+
+fun List<CameraEntity>.convertToCameraMain(): List<CameraMain> {
+    return this.map { camera ->
+        CameraMain(
+            id = camera.id,
+            isFavorite = camera.isFavorite,
+            name = camera.name,
+            isRec = camera.isRecord,
+            room = camera.room,
+            urlPath = camera.urlPath
+        )
+    }
+}
+
+fun List<DoorEntity>.convertToDoorsMain(): List<DoorMain> {
+    return this.map { door ->
+        DoorMain(
+            id = door.id,
+            isFavorite = door.isFavorite,
+            name = door.name,
+            room = door.room,
+            urlPath = door.urlPath
+        )
+    }
+}
