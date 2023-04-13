@@ -75,4 +75,6 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.6.1'
 
     implementation "androidx.hilt:hilt-navigation-compose:1.0.0"
+
+    implementation "com.github.bumptech.glide:compose:1.0.0-alpha.1"
 }
