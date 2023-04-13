@@ -72,7 +72,7 @@ fun MainScreen(
                     Text(
                         modifier = modifier
                             .fillMaxWidth()
-                            .padding(top =13.dp)
+                            .padding(top = 13.dp)
                             .weight(1f),
                         textAlign = TextAlign.Center,
                         color = colorResource(id = R.color.text_dark),
@@ -81,7 +81,7 @@ fun MainScreen(
                         text = stringResource(id = R.string.cameras)
                     )
                     Divider(modifier = modifier
-                        .padding(top =13.dp)
+                        .padding(top = 13.dp)
                         .height(2.dp),
                     color = when (status) {
                         Status.CAMERA -> colorResource(id = R.color.line_blue)
@@ -99,7 +99,7 @@ fun MainScreen(
                     Text(
                         modifier = modifier
                             .fillMaxWidth()
-                            .padding(top =13.dp)
+                            .padding(top = 13.dp)
                             .weight(1f),
                         textAlign = TextAlign.Center,
                         color = colorResource(id = R.color.text_dark),
@@ -108,12 +108,23 @@ fun MainScreen(
                         text = stringResource(id = R.string.doors)
                     )
                     Divider(modifier = modifier
-                        .padding(top =13.dp)
+                        .padding(top = 13.dp)
                         .height(2.dp),
                         color = when (status) {
                             Status.CAMERA -> colorResource(id = R.color.white)
                             Status.DOOR -> colorResource(id = R.color.line_blue)
                         })
+                }
+            }
+            when (status) {
+                Status.CAMERA -> {
+                    CamerasSection(
+                        rooms = state.value.roomswithCamers,
+                        onEvent = viewModel::onEvent
+                    )
+                }
+                Status.DOOR -> {
+
                 }
             }
         }

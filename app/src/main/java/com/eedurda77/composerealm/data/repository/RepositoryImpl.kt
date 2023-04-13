@@ -2,13 +2,12 @@ package com.eedurda77.composerealm.data.repository
 
 import com.eedurda77.composerealm.data.local.CameraEntity
 import com.eedurda77.composerealm.data.local.DoorEntity
-import com.eedurda77.composerealm.data.mapper.convertToCameraMain
-import com.eedurda77.composerealm.data.mapper.convertToCamerasEntity
-import com.eedurda77.composerealm.data.mapper.convertToDoorsEntity
-import com.eedurda77.composerealm.data.mapper.convertToDoorsMain
+import com.eedurda77.composerealm.data.local.RoomEntity
+import com.eedurda77.composerealm.data.mapper.*
 import com.eedurda77.composerealm.data.remote.CarsApi
 import com.eedurda77.composerealm.domain.models.CameraMain
 import com.eedurda77.composerealm.domain.models.DoorMain
+import com.eedurda77.composerealm.domain.models.RoomMain
 import com.eedurda77.composerealm.domain.repository.Repo
 import com.eedurda77.composerealm.utils.Resource
 import io.realm.Realm
@@ -74,6 +73,60 @@ class RepositoryImpl @Inject constructor(
                             .where(CameraEntity::class.java)
                             .findAll()
                             .convertToCameraMain()
+                    )
+                }
+                emit(Resource.Success(data = localListings))
+            }
+        }
+    }
+
+    override suspend fun getRooms(isRefresh: Boolean): Flow<Resource<List<RoomMain>>> {
+        val realm = Realm.getInstance(config)
+        return flow {
+            val localListings = mutableListOf<RoomMain>()
+            realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
+                localListings.addAll(
+                    realmTransaction
+                        .where(RoomEntity::class.java)
+                        .findAll()
+                        .convertToRoomMain()
+                )
+            }
+            emit(
+                Resource.Success(
+                    data = localListings
+                )
+            )
+            val isDbEmpty = localListings.isEmpty()
+            val shouldJustLoadFromCache = !isDbEmpty && !isRefresh
+            if (shouldJustLoadFromCache) {
+                return@flow
+            }
+            val remoteListings = try {
+                api.getCameras()
+            } catch (e: IOException) {
+                e.printStackTrace()
+                emit(Resource.Error(message = e.message.toString()))
+                null
+            } catch (e: HttpException) {
+                e.printStackTrace()
+                emit(Resource.Error(message = e.message.toString()))
+                null
+            }
+            remoteListings?.let { listings ->
+                realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
+                    realmTransaction.deleteAll()
+                }
+                realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
+                    realmTransaction.insert(listings.convertToRoomEntity())
+                }
+                localListings.clear()
+                realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
+                    localListings.addAll(
+                        realmTransaction
+                            .where(RoomEntity::class.java)
+                            .findAll()
+                            .convertToRoomMain()
                     )
                 }
                 emit(Resource.Success(data = localListings))
@@ -163,3 +216,4 @@ class RepositoryImpl @Inject constructor(
         }
     }
 }
+

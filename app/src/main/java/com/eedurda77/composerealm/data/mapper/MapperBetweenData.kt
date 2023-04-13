@@ -2,10 +2,12 @@ package com.eedurda77.composerealm.data.mapper
 
 import com.eedurda77.composerealm.data.local.CameraEntity
 import com.eedurda77.composerealm.data.local.DoorEntity
+import com.eedurda77.composerealm.data.local.RoomEntity
 import com.eedurda77.composerealm.data.remote.dto.CamerasDto
 import com.eedurda77.composerealm.data.remote.dto.DoorsDto
 import com.eedurda77.composerealm.domain.models.CameraMain
 import com.eedurda77.composerealm.domain.models.DoorMain
+import com.eedurda77.composerealm.domain.models.RoomMain
 
 fun CamerasDto.convertToCamerasEntity(): List<CameraEntity> {
     return this.dataCamera.cameras.map { camera ->
@@ -32,6 +34,14 @@ fun DoorsDto.convertToDoorsEntity(): List<DoorEntity> {
     }
 }
 
+fun CamerasDto.convertToRoomEntity(): List<RoomEntity> {
+    return this.dataCamera.room.map {
+        RoomEntity(
+            name = it
+        )
+    }
+}
+
 fun List<CameraEntity>.convertToCameraMain(): List<CameraMain> {
     return this.map { camera ->
         CameraMain(
@@ -53,6 +63,14 @@ fun List<DoorEntity>.convertToDoorsMain(): List<DoorMain> {
             name = door.name,
             room = door.room,
             urlPath = door.urlPath
+        )
+    }
+}
+
+fun List<RoomEntity>.convertToRoomMain(): List<RoomMain> {
+    return this.map { room ->
+        RoomMain(
+            nameRoom = room.name?: ""
         )
     }
 }
