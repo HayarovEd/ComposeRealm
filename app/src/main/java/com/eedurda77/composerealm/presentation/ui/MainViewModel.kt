@@ -1,20 +1,16 @@
 package com.eedurda77.composerealm.presentation.ui
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.eedurda77.composerealm.domain.models.CameraMain
-import com.eedurda77.composerealm.domain.models.RoomMain
-import com.eedurda77.composerealm.domain.models.RoomWithCameras
 import com.eedurda77.composerealm.domain.repository.Repo
 import com.eedurda77.composerealm.presentation.MainState
 import com.eedurda77.composerealm.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(private val repo: Repo) : ViewModel() {
@@ -71,28 +67,11 @@ class MainViewModel @Inject constructor(private val repo: Repo) : ViewModel() {
                                 }
                             }
                             is Resource.Success -> {
-                                repo.getRooms(isRefresh = isRefresh).collect { resultRoom ->
-                                    when (resultRoom) {
-                                        is Resource.Error -> {
-                                            _state.update { currentState ->
-                                                currentState.copy(
-                                                    isLoading = false,
-                                                    error = resultRoom.message
-                                                )
-                                            }
-                                        }
-                                        is Resource.Success -> {
-                                            _state.update { currentState ->
-                                                currentState.copy(
-                                                    isLoading = false,
-                                                    roomswithCamers = convertToCameraMainByRoom(
-                                                        cameras = resultCamera.data ?: emptyList(),
-                                                        rooms = resultRoom.data ?: emptyList()
-                                                    )
-                                                )
-                                            }
-                                        }
-                                    }
+                                _state.update { currentState ->
+                                    currentState.copy(
+                                        isLoading = false,
+                                        roomswithCamers = resultCamera.data?: emptyList()
+                                    )
                                 }
 
                             }
@@ -128,7 +107,7 @@ class MainViewModel @Inject constructor(private val repo: Repo) : ViewModel() {
         }
     }
 
-    private fun convertToCameraMainByRoom(
+    /*private fun convertToCameraMainByRoom(
         cameras: List<CameraMain>,
         rooms: List<RoomMain>
     ): List<RoomWithCameras> {
@@ -143,5 +122,5 @@ class MainViewModel @Inject constructor(private val repo: Repo) : ViewModel() {
             )
         }
         return roomsByCameras
-    }
+    }*/
 }

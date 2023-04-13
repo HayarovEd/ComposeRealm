@@ -55,6 +55,12 @@ fun List<CameraEntity>.convertToCameraMain(): List<CameraMain> {
     }
 }
 
+
+fun List<RoomEntity>.convertToString(): List<String> {
+    return this.map { room ->
+        room.name?: ""
+    }
+}
 fun List<DoorEntity>.convertToDoorsMain(): List<DoorMain> {
     return this.map { door ->
         DoorMain(
