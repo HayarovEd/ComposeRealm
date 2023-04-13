@@ -6,15 +6,15 @@ import io.realm.annotations.Required
 
 open class CameraEntity(
     @PrimaryKey
-    var id: Int,
-    @Required
-    var isFavorite: Boolean,
-    @Required
-    var name: String,
-    @Required
-    var isRecord: Boolean,
+    var id: Int? = null,
+
+    var isFavorite: Boolean? = null,
+
+    var name: String? = null,
+
+    var isRecord: Boolean? = null,
     @Required
     var room: String? = null,
-    @Required
-    var urlPath: String
+
+    var urlPath: String ? = null
 ) : RealmObject()
