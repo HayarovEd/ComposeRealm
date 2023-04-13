@@ -1,5 +1,6 @@
 package com.eedurda77.composerealm.presentation.ui
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eedurda77.composerealm.domain.models.CameraMain
@@ -26,9 +27,9 @@ class MainViewModel @Inject constructor(private val repo: Repo) : ViewModel() {
 
     fun onEvent(event: MainEvent) {
         when (event) {
-            is MainEvent.ChangeCameraName -> {
+            is MainEvent.ChangeCameraStatusFavorite -> {
                 viewModelScope.launch{
-                    repo.changeCameraName(event.name, event.id)
+                    repo.changeCameraFavorite(event.isFavorite, event.id)
                 }
             }
             is MainEvent.ChangeDoorName -> {

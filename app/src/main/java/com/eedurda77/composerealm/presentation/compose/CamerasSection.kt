@@ -1,12 +1,9 @@
 package com.eedurda77.composerealm.presentation.compose
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -15,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
@@ -139,6 +135,16 @@ fun ItemCamera(
             }
             Image(
                 modifier = modifier
+                    .clickable {
+                        onEvent(
+                            MainEvent.ChangeCameraStatusFavorite(
+                                changeStatusFavorite(
+                                    currentStatus = camera.isFavorite ?: true
+                                ),
+                                id = camera.id?: 100
+                            )
+                        )
+                    }
                     .padding(start = 9.dp)
                     .clip(shape = CircleShape)
                     .border(width = 1.dp, color = colorResource(id = R.color.grey))
@@ -153,7 +159,9 @@ fun ItemCamera(
             color = colorResource(id = R.color.text_light_dark),
             fontFamily = FontFamily(Font(R.font.circe)),
             fontSize = 17.sp,
-            text = camera.name?:""
+            text = camera.name ?: ""
         )
     }
 }
+
+private fun changeStatusFavorite(currentStatus: Boolean) = !currentStatus

@@ -11,6 +11,6 @@ interface Repo {
 
     suspend fun getRooms(isRefresh: Boolean): Flow<Resource<List<RoomMain>>>
     suspend fun getDoors(isRefresh: Boolean): Flow<Resource<List<DoorMain>>>
-    suspend fun changeCameraName(name: String, id: Int)
+    suspend fun changeCameraFavorite(isFavorite:Boolean, id: Int)
     suspend fun changeDoorName(name: String, id: Int)
 }

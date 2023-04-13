@@ -1,5 +1,6 @@
 package com.eedurda77.composerealm.data.repository
 
+import android.util.Log
 import com.eedurda77.composerealm.data.local.CameraEntity
 import com.eedurda77.composerealm.data.local.DoorEntity
 import com.eedurda77.composerealm.data.local.RoomEntity
@@ -24,10 +25,9 @@ class RepositoryImpl @Inject constructor(
     private val api: CarsApi,
     private val config: RealmConfiguration
 ) : Repo {
-    //private
+    private val realm = Realm.getInstance(config)
 
     override suspend fun getCameras(isRefresh: Boolean): Flow<Resource<List<CameraMain>>> {
-        val realm = Realm.getInstance(config)
         return flow {
             val localListings = mutableListOf<CameraMain>()
             realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
@@ -81,7 +81,6 @@ class RepositoryImpl @Inject constructor(
     }
 
     override suspend fun getRooms(isRefresh: Boolean): Flow<Resource<List<RoomMain>>> {
-        val realm = Realm.getInstance(config)
         return flow {
             val localListings = mutableListOf<RoomMain>()
             realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
@@ -135,7 +134,6 @@ class RepositoryImpl @Inject constructor(
     }
 
     override suspend fun getDoors(isRefresh: Boolean): Flow<Resource<List<DoorMain>>> {
-        val realm = Realm.getInstance(config)
         return flow {
             val localListings = mutableListOf<DoorMain>()
             realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
@@ -188,14 +186,14 @@ class RepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun changeCameraName(name: String, id: Int) {
-        val realm = Realm.getInstance(config)
+    override suspend fun changeCameraFavorite(isFavorite: Boolean, id: Int) {
+        val camera = realm
+            .where(CameraEntity::class.java)
+            .equalTo("id", id)
+            .findFirst()
+
         realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
-            val camera = realmTransaction
-                .where(CameraEntity::class.java)
-                .equalTo("id", id)
-                .findFirst()
-            camera?.name = name
+            camera?.isFavorite = isFavorite
             if (camera != null) {
                 realmTransaction.copyToRealmOrUpdate(camera)
             }
