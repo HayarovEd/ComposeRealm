@@ -23,23 +23,25 @@ import javax.inject.Inject
 
 class RepositoryImpl @Inject constructor(
     private val api: CarsApi,
-    config: RealmConfiguration
+    private val config: RealmConfiguration
 ) : Repo {
-    private val realm = Realm.getInstance(config)
+    //private
 
     override suspend fun getCameras(isRefresh: Boolean): Flow<Resource<List<CameraMain>>> {
+        val realm = Realm.getInstance(config)
         return flow {
-            val localListings = mutableListOf<CameraEntity>()
+            val localListings = mutableListOf<CameraMain>()
             realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
                 localListings.addAll(
                     realmTransaction
                         .where(CameraEntity::class.java)
                         .findAll()
+                        .convertToCameraMain()
                 )
             }
             emit(
                 Resource.Success(
-                    data = localListings.convertToCameraMain()
+                    data = localListings
                 )
             )
             val isDbEmpty = localListings.isEmpty()
@@ -71,26 +73,29 @@ class RepositoryImpl @Inject constructor(
                         realmTransaction
                             .where(CameraEntity::class.java)
                             .findAll()
+                            .convertToCameraMain()
                     )
                 }
-                emit(Resource.Success(data = localListings.convertToCameraMain()))
+                emit(Resource.Success(data = localListings))
             }
         }
     }
 
     override suspend fun getDoors(isRefresh: Boolean): Flow<Resource<List<DoorMain>>> {
+        val realm = Realm.getInstance(config)
         return flow {
-            val localListings = mutableListOf<DoorEntity>()
+            val localListings = mutableListOf<DoorMain>()
             realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
                 localListings.addAll(
                     realmTransaction
                         .where(DoorEntity::class.java)
                         .findAll()
+                        .convertToDoorsMain()
                 )
             }
             emit(
                 Resource.Success(
-                    data = localListings.convertToDoorsMain()
+                    data = localListings
                 )
             )
             val isDbEmpty = localListings.isEmpty()
@@ -122,14 +127,16 @@ class RepositoryImpl @Inject constructor(
                         realmTransaction
                             .where(DoorEntity::class.java)
                             .findAll()
+                            .convertToDoorsMain()
                     )
                 }
-                emit(Resource.Success(data = localListings.convertToDoorsMain()))
+                emit(Resource.Success(data = localListings))
             }
         }
     }
 
     override suspend fun changeCameraName(name: String, id: Int) {
+        val realm = Realm.getInstance(config)
         realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
             val camera = realmTransaction
                 .where(CameraEntity::class.java)
@@ -143,6 +150,7 @@ class RepositoryImpl @Inject constructor(
     }
 
     override suspend fun changeDoorName(name: String, id: Int) {
+        val realm = Realm.getInstance(config)
         realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
             val door = realmTransaction
                 .where(DoorEntity::class.java)

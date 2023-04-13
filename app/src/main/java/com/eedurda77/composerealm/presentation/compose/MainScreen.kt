@@ -1,11 +1,10 @@
 package com.eedurda77.composerealm.presentation.compose
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
+import androidx.compose.material.pullrefresh.PullRefreshIndicator
+import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -30,20 +29,32 @@ fun MainScreen(
     viewModel: MainViewModel = hiltViewModel()
 ) {
     val state = viewModel.state.collectAsState()
+    val refreshing =  state.value.isLoading
     val swipeRefreshState = rememberPullRefreshState(
-        refreshing = state.value.isLoading,
+        refreshing = refreshing,
         onRefresh = { viewModel.onEvent(MainEvent.Refresh) }
     )
-    Column(modifier = modifier.fillMaxSize()) {
-        Text(
-            modifier = modifier
-                .fillMaxWidth(1f)
-                .padding(top = 10.dp),
-            textAlign = TextAlign.Center,
-            fontFamily = FontFamily(Font(font.circe)),
-            fontSize = 21.sp,
-            text = stringResource(id = R.string.my_home)
-        )
+    Box(
+        modifier = modifier
+            .pullRefresh(state = swipeRefreshState)
+    ) {
+        Column(modifier = modifier
+            .fillMaxSize()
+        ) {
+            Text(
+                modifier = modifier
+                    .fillMaxWidth(1f)
+                    .padding(top = 10.dp),
+                textAlign = TextAlign.Center,
+                fontFamily = FontFamily(Font(font.circe)),
+                fontSize = 21.sp,
+                text = stringResource(id = R.string.my_home)
+            )
+            Row(modifier = modifier) {
+                
+            }
+        }
+        PullRefreshIndicator(refreshing = refreshing, state = swipeRefreshState)
     }
 }
 
