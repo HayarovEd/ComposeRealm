@@ -241,9 +241,7 @@ class RepositoryImpl @Inject constructor(
                 .findFirst()
 
             camera?.isFavorite = isFavorite
-           /* if (camera != null) {
-                realmTransaction.copyToRealmOrUpdate(camera)
-            }*/
+            camera?.let { realmTransaction.insertOrUpdate(it) }
         }
     }
 

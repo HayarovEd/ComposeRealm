@@ -39,6 +39,7 @@ class MainViewModel @Inject constructor(private val repo: Repo) : ViewModel() {
                         isLoading = true
                     )
                 }
+                getData()
             }
             is MainEvent.ToggleStatus -> {
                 _state.update { currentState ->
@@ -62,7 +63,7 @@ class MainViewModel @Inject constructor(private val repo: Repo) : ViewModel() {
                                 _state.update { currentState ->
                                     currentState.copy(
                                         isLoading = false,
-                                        error = resultCamera.message
+                                        error = resultCamera.message,
                                     )
                                 }
                             }
