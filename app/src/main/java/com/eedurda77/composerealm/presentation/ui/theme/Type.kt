@@ -1,4 +1,4 @@
-package com.eedurda77.composerealm.ui.theme
+package com.eedurda77.composerealm.presentation.ui.theme
 
 import androidx.compose.material.Typography
 import androidx.compose.ui.text.TextStyle
