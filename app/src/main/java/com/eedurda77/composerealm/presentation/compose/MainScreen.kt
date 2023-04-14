@@ -6,10 +6,10 @@ import androidx.compose.material.Divider
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.Text
 import androidx.compose.material.pullrefresh.PullRefreshIndicator
-import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.material.pullrefresh.rememberPullRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
@@ -41,7 +41,6 @@ fun MainScreen(
     val status =  state.value.status
     Box(
         modifier = modifier
-            .pullRefresh(state = swipeRefreshState)
     ) {
         Column(modifier = modifier
             .fillMaxSize()
@@ -120,7 +119,8 @@ fun MainScreen(
                 Status.CAMERA -> {
                     CamerasSection(
                         rooms = state.value.roomswithCamers,
-                        onEvent = viewModel::onEvent
+                        onEvent = viewModel::onEvent,
+                        swipeRefreshState = swipeRefreshState
                     )
                 }
                 Status.DOOR -> {
@@ -128,7 +128,11 @@ fun MainScreen(
                 }
             }
         }
-        PullRefreshIndicator(refreshing = refreshing, state = swipeRefreshState)
+        PullRefreshIndicator(
+            modifier = modifier.align(Alignment.TopCenter),
+            refreshing = refreshing,
+            state = swipeRefreshState
+        )
     }
 }
 

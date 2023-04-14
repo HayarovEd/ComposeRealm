@@ -7,6 +7,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
+import androidx.compose.material.pullrefresh.PullRefreshState
+import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterVertically
@@ -27,15 +29,18 @@ import com.eedurda77.composerealm.domain.models.CameraMain
 import com.eedurda77.composerealm.domain.models.RoomWithCameras
 import com.eedurda77.composerealm.presentation.ui.MainEvent
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun CamerasSection(
     modifier: Modifier = Modifier,
     rooms: List<RoomWithCameras>,
-    onEvent: (MainEvent) -> Unit
+    onEvent: (MainEvent) -> Unit,
+    swipeRefreshState: PullRefreshState
 ) {
     LazyColumn(
         modifier = modifier
             .fillMaxWidth()
+            .pullRefresh(state = swipeRefreshState)
     ) {
         items(rooms) { room ->
             ItemRoom(
