@@ -22,8 +22,7 @@ import java.io.IOException
 import javax.inject.Inject
 
 class RepositoryImpl @Inject constructor(
-    private val api: CarsApi,
-    private val config: RealmConfiguration
+    private val api: CarsApi
 ) : Repo {
 
     override suspend fun getCameras(isRefresh: Boolean): Flow<Resource<List<RoomWithCameras>>> {
