@@ -235,13 +235,25 @@ class RepositoryImpl @Inject constructor(
     override suspend fun changeCameraFavorite(isFavorite: Boolean, id: Int) {
 
         realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
-            val camera = realmTransaction
+            val cameraOne = realmTransaction
                 .where(CameraEntity::class.java)
                 .equalTo("id", id)
                 .findFirst()
 
-            camera?.isFavorite = isFavorite
-            camera?.let { realmTransaction.insertOrUpdate(it) }
+            val newCamera = CameraEntity(
+                id = cameraOne?.id,
+                isFavorite = isFavorite,
+                name = cameraOne?.name,
+                isRecord = cameraOne?.isRecord,
+                room = cameraOne?.room,
+                urlPath = cameraOne?.urlPath
+            )
+
+
+            realmTransaction.copyToRealmOrUpdate(
+                newCamera
+            )
+            //camera?.let { realmTransaction.copyToRealmOrUpdate(it) }
         }
     }
 
@@ -275,5 +287,6 @@ class RepositoryImpl @Inject constructor(
         }
         return roomsByCameras
     }
+
 }
 
