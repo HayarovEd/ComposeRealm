@@ -27,11 +27,13 @@ class MainViewModel @Inject constructor(private val repo: Repo) : ViewModel() {
                 viewModelScope.launch{
                     repo.changeCameraFavorite(event.isFavorite, event.id)
                 }
+                getData()
             }
             is MainEvent.ChangeDoorName -> {
                 viewModelScope.launch{
                     repo.changeDoorName(event.name, event.id)
                 }
+                getData()
             }
             is MainEvent.Refresh -> {
                 _state.update { currentState ->

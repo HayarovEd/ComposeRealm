@@ -3,12 +3,7 @@ package com.eedurda77.composerealm.data.repository
 import com.eedurda77.composerealm.data.local.CameraEntity
 import com.eedurda77.composerealm.data.local.DoorEntity
 import com.eedurda77.composerealm.data.local.RoomEntity
-import com.eedurda77.composerealm.data.mapper.convertToCameraMain
-import com.eedurda77.composerealm.data.mapper.convertToCamerasEntity
-import com.eedurda77.composerealm.data.mapper.convertToDoorsEntity
-import com.eedurda77.composerealm.data.mapper.convertToDoorsMain
-import com.eedurda77.composerealm.data.mapper.convertToRoomEntity
-import com.eedurda77.composerealm.data.mapper.convertToString
+import com.eedurda77.composerealm.data.mapper.*
 import com.eedurda77.composerealm.data.remote.CarsApi
 import com.eedurda77.composerealm.domain.models.CameraMain
 import com.eedurda77.composerealm.domain.models.DoorMain
@@ -18,21 +13,22 @@ import com.eedurda77.composerealm.utils.Resource
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import io.realm.kotlin.executeTransactionAwait
-import java.io.IOException
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.withContext
 import retrofit2.HttpException
+import java.io.IOException
+import javax.inject.Inject
 
 class RepositoryImpl @Inject constructor(
     private val api: CarsApi,
     private val config: RealmConfiguration
 ) : Repo {
-    private val realm = Realm.getInstance(config)
 
     override suspend fun getCameras(isRefresh: Boolean): Flow<Resource<List<RoomWithCameras>>> {
         return flow {
+            val realm = Realm.getDefaultInstance()
             val localCameraListings = mutableListOf<CameraMain>()
             val localRoomListings = mutableListOf<String>()
             realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
@@ -51,69 +47,70 @@ class RepositoryImpl @Inject constructor(
                         .convertToString()
                 )
             }
-            emit(
-                Resource.Success(
-                    data = convertToCameraMainByRoom(
-                        cameras = localCameraListings,
-                        rooms = localRoomListings
-                    )
-                )
-            )
+
             val isDbEmpty = localCameraListings.isEmpty()||localRoomListings.isEmpty()
-            val shouldJustLoadFromCache = !isDbEmpty && !isRefresh
-            if (shouldJustLoadFromCache) {
-                return@flow
-            }
-            val remoteListings = try {
-                api.getCameras()
-            } catch (e: IOException) {
-                e.printStackTrace()
-                emit(Resource.Error(message = e.message.toString()))
-                null
-            } catch (e: HttpException) {
-                e.printStackTrace()
-                emit(Resource.Error(message = e.message.toString()))
-                null
-            }
-            remoteListings?.let { listings ->
+            if (isDbEmpty||isRefresh) {
+                val remoteListings = try {
+                    api.getCameras()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                    emit(Resource.Error(message = e.message.toString()))
+                    null
+                } catch (e: HttpException) {
+                    e.printStackTrace()
+                    emit(Resource.Error(message = e.message.toString()))
+                    null
+                }
+                remoteListings?.let { listings ->
 
-                realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
-                    val cameras = realmTransaction
-                        .where(CameraEntity::class.java)
-                        .findAll()
-                    cameras.deleteAllFromRealm()
-                }
-                realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
-                    val rooms = realmTransaction
-                        .where(RoomEntity::class.java)
-                        .findAll()
-                    rooms.deleteAllFromRealm()
-                }
-
-                realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
-                    realmTransaction.insert(listings.convertToCamerasEntity())
-                }
-                realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
-                    realmTransaction.insert(listings.convertToRoomEntity())
-                }
-                localCameraListings.clear()
-                localRoomListings.clear()
-                realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
-                    localCameraListings.addAll(
-                        realmTransaction
+                    realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
+                        val cameras = realmTransaction
                             .where(CameraEntity::class.java)
                             .findAll()
-                            .convertToCameraMain()
-                    )
-                }
-                realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
-                    localRoomListings.addAll(
-                        realmTransaction
+                        cameras.deleteAllFromRealm()
+                    }
+                    realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
+                        val rooms = realmTransaction
                             .where(RoomEntity::class.java)
                             .findAll()
-                            .convertToString()
+                        rooms.deleteAllFromRealm()
+                    }
+
+                    realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
+                        realmTransaction.insert(listings.convertToCamerasEntity())
+                    }
+                    realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
+                        realmTransaction.insert(listings.convertToRoomEntity())
+                    }
+                    localCameraListings.clear()
+                    localRoomListings.clear()
+                    realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
+                        localCameraListings.addAll(
+                            realmTransaction
+                                .where(CameraEntity::class.java)
+                                .findAll()
+                                .convertToCameraMain()
+                        )
+                    }
+                    realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
+                        localRoomListings.addAll(
+                            realmTransaction
+                                .where(RoomEntity::class.java)
+                                .findAll()
+                                .convertToString()
+                        )
+                    }
+                    realm.close()
+                    emit(
+                        Resource.Success(
+                            data = convertToCameraMainByRoom(
+                                cameras = localCameraListings,
+                                rooms = localRoomListings
+                            )
+                        )
                     )
                 }
+            } else {
                 emit(
                     Resource.Success(
                         data = convertToCameraMainByRoom(
@@ -126,61 +123,10 @@ class RepositoryImpl @Inject constructor(
         }
     }
 
-    /* override suspend fun getRooms(isRefresh: Boolean): Flow<Resource<List<RoomMain>>> {
-         return flow {
-             val localListings = mutableListOf<RoomMain>()
-             realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
-                 localListings.addAll(
-                     realmTransaction
-                         .where(RoomEntity::class.java)
-                         .findAll()
-                         .convertToRoomMain()
-                 )
-             }
-             emit(
-                 Resource.Success(
-                     data = localListings
-                 )
-             )
-             val isDbEmpty = localListings.isEmpty()
-             val shouldJustLoadFromCache = !isDbEmpty && !isRefresh
-             if (shouldJustLoadFromCache) {
-                 return@flow
-             }
-             val remoteListings = try {
-                 api.getCameras()
-             } catch (e: IOException) {
-                 e.printStackTrace()
-                 emit(Resource.Error(message = e.message.toString()))
-                 null
-             } catch (e: HttpException) {
-                 e.printStackTrace()
-                 emit(Resource.Error(message = e.message.toString()))
-                 null
-             }
-             remoteListings?.let { listings ->
-                 realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
-                     realmTransaction.deleteAll()
-                 }
-                 realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
-                     realmTransaction.insert(listings.convertToRoomEntity())
-                 }
-                 localListings.clear()
-                 realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
-                     localListings.addAll(
-                         realmTransaction
-                             .where(RoomEntity::class.java)
-                             .findAll()
-                             .convertToRoomMain()
-                     )
-                 }
-                 emit(Resource.Success(data = localListings))
-             }
-         }
-     }*/
 
     override suspend fun getDoors(isRefresh: Boolean): Flow<Resource<List<DoorMain>>> {
         return flow {
+            val realm = Realm.getDefaultInstance()
             val localListings = mutableListOf<DoorMain>()
             realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
                 localListings.addAll(
@@ -190,84 +136,71 @@ class RepositoryImpl @Inject constructor(
                         .convertToDoorsMain()
                 )
             }
-            emit(
-                Resource.Success(
-                    data = localListings
-                )
-            )
             val isDbEmpty = localListings.isEmpty()
-            val shouldJustLoadFromCache = !isDbEmpty && !isRefresh
-            if (shouldJustLoadFromCache) {
-                return@flow
-            }
-            val remoteListings = try {
-                api.getDoors()
-            } catch (e: IOException) {
-                e.printStackTrace()
-                emit(Resource.Error(message = e.message.toString()))
-                null
-            } catch (e: HttpException) {
-                e.printStackTrace()
-                emit(Resource.Error(message = e.message.toString()))
-                null
-            }
-            remoteListings?.let { listings ->
-                realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
-                    realmTransaction.deleteAll()
+            if (isDbEmpty||isRefresh) {
+                val remoteListings = try {
+                    api.getDoors()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                    emit(Resource.Error(message = e.message.toString()))
+                    null
+                } catch (e: HttpException) {
+                    e.printStackTrace()
+                    emit(Resource.Error(message = e.message.toString()))
+                    null
                 }
-                realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
-                    realmTransaction.insert(listings.convertToDoorsEntity())
+                remoteListings?.let { listings ->
+                    realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
+                        realmTransaction.deleteAll()
+                    }
+                    realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
+                        realmTransaction.insert(listings.convertToDoorsEntity())
+                    }
+                    localListings.clear()
+                    realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
+                        localListings.addAll(
+                            realmTransaction
+                                .where(DoorEntity::class.java)
+                                .findAll()
+                                .convertToDoorsMain()
+                        )
+                    }
+                    realm.close()
+                    emit(Resource.Success(data = localListings))
                 }
-                localListings.clear()
-                realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
-                    localListings.addAll(
-                        realmTransaction
-                            .where(DoorEntity::class.java)
-                            .findAll()
-                            .convertToDoorsMain()
+            } else {
+                emit(
+                    Resource.Success(
+                        data = localListings
                     )
-                }
-                emit(Resource.Success(data = localListings))
+                )
             }
         }
     }
 
-    override suspend fun changeCameraFavorite(isFavorite: Boolean, id: Int) {
-
-        realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
-            val cameraOne = realmTransaction
-                .where(CameraEntity::class.java)
-                .equalTo("id", id)
-                .findFirst()
-
-            val newCamera = CameraEntity(
-                id = cameraOne?.id,
-                isFavorite = isFavorite,
-                name = cameraOne?.name,
-                isRecord = cameraOne?.isRecord,
-                room = cameraOne?.room,
-                urlPath = cameraOne?.urlPath
-            )
-
-
-            realmTransaction.copyToRealmOrUpdate(
-                newCamera
-            )
-            //camera?.let { realmTransaction.copyToRealmOrUpdate(it) }
+    override suspend fun changeCameraFavorite(isUpdateFavorite: Boolean, id: Int) {
+        withContext(Dispatchers.IO) {
+            val realm = Realm.getDefaultInstance()
+            realm.executeTransaction { realmD ->
+                val realmItem = realmD.where(CameraEntity::class.java).equalTo("id", id).findFirst()
+                realmItem?.apply {
+                    this.isFavorite = isUpdateFavorite
+                }
+            }
+            realm.close()
         }
     }
 
     override suspend fun changeDoorName(name: String, id: Int) {
-        val realm = Realm.getInstance(config)
-        realm.executeTransactionAwait(Dispatchers.IO) { realmTransaction ->
-            val door = realmTransaction
-                .where(DoorEntity::class.java)
-                .equalTo("id", id)
-                .findFirst()
-            door?.name = name
-            if (door != null) {
-                realmTransaction.copyToRealmOrUpdate(door)
+        withContext(Dispatchers.IO) {
+            val realm = Realm.getDefaultInstance()
+            realm.executeTransaction { realmD ->
+                val realmItem = realmD.where(DoorEntity::class.java).equalTo("id", id).findFirst()
+                realmItem?.apply {
+                    this.name = name
+                }
             }
+            realm.close()
         }
     }
 

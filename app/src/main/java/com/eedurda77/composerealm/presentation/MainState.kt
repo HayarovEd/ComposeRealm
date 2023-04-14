@@ -8,6 +8,6 @@ data class MainState(
     val roomswithCamers: List<RoomWithCameras> = emptyList(),
     val doors: List<DoorMain> = emptyList(),
     val status: Status = Status.CAMERA,
-    val isLoading: Boolean = true,
+    val isLoading: Boolean = false,
     val error: String? = null
 )
