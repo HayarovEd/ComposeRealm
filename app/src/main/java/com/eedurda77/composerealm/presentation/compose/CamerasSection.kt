@@ -155,11 +155,8 @@ fun ItemCamera(
                         )
                     }
                     .padding(start = 9.dp)
-                    .clip(shape = CircleShape)
-                    .border(width = 1.dp, color = colorResource(id = R.color.grey))
-                    .align(alignment = CenterVertically)
-                    .padding(8.dp),
-                imageVector = ImageVector.vectorResource(id = R.drawable.ic_unchecked_star),
+                    .align(alignment = CenterVertically),
+                imageVector = ImageVector.vectorResource(id = R.drawable.door_star),
                 contentDescription = ""
             )
         }
