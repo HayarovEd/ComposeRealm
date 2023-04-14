@@ -1,5 +1,6 @@
 package com.eedurda77.composerealm.presentation.compose
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Divider
@@ -44,6 +45,7 @@ fun MainScreen(
     ) {
         Column(modifier = modifier
             .fillMaxSize()
+            .background(colorResource(id = R.color.base_background))
         ) {
             Text(
                 modifier = modifier
@@ -124,7 +126,11 @@ fun MainScreen(
                     )
                 }
                 Status.DOOR -> {
-
+                    DoorSection(
+                        doors = state.value.doors,
+                        onEvent = viewModel::onEvent,
+                        swipeRefreshState = swipeRefreshState
+                    )
                 }
             }
         }

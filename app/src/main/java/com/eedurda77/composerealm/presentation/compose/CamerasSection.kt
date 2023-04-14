@@ -40,6 +40,7 @@ fun CamerasSection(
     LazyColumn(
         modifier = modifier
             .fillMaxWidth()
+            .background(colorResource(id = R.color.base_background))
             .pullRefresh(state = swipeRefreshState)
     ) {
         items(rooms) { room ->
@@ -61,6 +62,7 @@ fun ItemRoom(
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .background(colorResource(id = R.color.white))
             .padding(start = 21.dp, end = 21.dp, top = 11.dp)
     ) {
         Text(
@@ -72,6 +74,7 @@ fun ItemRoom(
         )
         LazyColumn(
             modifier = modifier
+                .background(colorResource(id = R.color.base_background))
                 .fillMaxWidth()
                 .height(560.dp)
                 .padding(top = 11.dp)
@@ -106,6 +109,7 @@ fun ItemCamera(
                 modifier = modifier
                     .width(360.dp)
                     .height(207.dp)
+                    .background(colorResource(id = R.color.white))
                     .clip(shape = RoundedCornerShape(topStart = 10.dp, topEnd = 10.dp))
             ) {
                 GlideImage(
