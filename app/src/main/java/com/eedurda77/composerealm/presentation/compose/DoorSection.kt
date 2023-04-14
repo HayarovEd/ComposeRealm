@@ -5,17 +5,19 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.Text
+import androidx.compose.material.*
 import androidx.compose.material.pullrefresh.PullRefreshState
 import androidx.compose.material.pullrefresh.pullRefresh
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -31,6 +33,7 @@ import com.eedurda77.composerealm.presentation.ui.MainEvent
 fun DoorSection(
     modifier: Modifier = Modifier,
     doors: List<DoorMain>,
+    idChangedName: Int,
     onEvent: (MainEvent) -> Unit,
     swipeRefreshState: PullRefreshState
 ) {
@@ -44,6 +47,7 @@ fun DoorSection(
         items(doors) { door ->
             ItemDoor(
                 door = door,
+                idChangedName = idChangedName,
                 onEvent = onEvent
             )
         }
@@ -55,7 +59,8 @@ fun DoorSection(
 fun ItemDoor(
     modifier: Modifier = Modifier,
     door: DoorMain,
-    onEvent: (MainEvent) -> Unit
+    onEvent: (MainEvent) -> Unit,
+    idChangedName: Int
 ) {
     Column(modifier = modifier
         .padding(top = 11.dp)
@@ -86,12 +91,18 @@ fun ItemDoor(
                     contentDescription = ""
                 )
             }
-            Image(
-                modifier = modifier
-                    .padding(start = 33.dp),
-                imageVector = ImageVector.vectorResource(id = R.drawable.edit),
-                contentDescription = ""
-            )
+            if (idChangedName == door.id) {
+                TextFieldChangeName(
+                    nameDoor = door.name,
+                    idDoor = door.id,
+                    onEvent = onEvent
+                )
+            } else {
+                ButtonShowTextField(
+                    idDoor = door.id,
+                    onEvent = onEvent
+                )
+            }
             Image(
                 modifier = modifier
                     .padding(start = 9.dp, end = 21.dp),
@@ -118,4 +129,69 @@ fun ItemDoor(
             }
         }
     }
+}
+
+@Composable
+fun ButtonShowTextField(
+    modifier: Modifier = Modifier,
+    idDoor: Int?,
+    onEvent: (MainEvent) -> Unit
+) {
+    Image(
+        modifier = modifier
+            .padding(start = 33.dp)
+            .clickable {
+                onEvent(
+                    MainEvent.ToggleVisibleFieldName(
+                        id = idDoor ?: -1
+                    )
+                )
+            },
+        imageVector = ImageVector.vectorResource(id = R.drawable.edit),
+        contentDescription = ""
+    )
+}
+
+@Composable
+fun TextFieldChangeName(
+    modifier: Modifier = Modifier,
+    nameDoor: String?,
+    idDoor: Int?,
+    onEvent: (MainEvent) -> Unit
+) {
+    val message = remember { mutableStateOf(nameDoor ?: "") }
+    OutlinedTextField(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(start = 33.dp),
+        trailingIcon = {
+            Icon(
+                modifier = modifier.clickable {
+                    onEvent(
+                        MainEvent.ToggleVisibleFieldName(
+                            id = -1
+                        )
+                    )
+                    onEvent(
+                        MainEvent.ChangeDoorName(
+                            name = message.value,
+                            id = idDoor ?: -1000
+                        )
+                    )
+                },
+                imageVector = ImageVector.vectorResource(id = R.drawable.edit),
+                contentDescription = ""
+            )
+        },
+        textStyle = TextStyle(
+            color = colorResource(id = R.color.text_light_dark),
+            fontFamily = FontFamily(Font(R.font.circe)),
+            fontSize = 16.sp,
+        ),
+        value = message.value,
+        colors = TextFieldDefaults.outlinedTextFieldColors(
+            focusedBorderColor= colorResource(id = R.color.line_blue),
+            unfocusedBorderColor =colorResource(id = R.color.line_blue),
+            trailingIconColor = colorResource(id = R.color.line_blue)),
+        onValueChange = { newText -> message.value = newText })
 }

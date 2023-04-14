@@ -120,7 +120,7 @@ fun MainScreen(
             when (status) {
                 Status.CAMERA -> {
                     CamerasSection(
-                        rooms = state.value.roomswithCamers,
+                        rooms = state.value.roomsWithCameras,
                         onEvent = viewModel::onEvent,
                         swipeRefreshState = swipeRefreshState
                     )
@@ -128,6 +128,7 @@ fun MainScreen(
                 Status.DOOR -> {
                     DoorSection(
                         doors = state.value.doors,
+                        idChangedName = state.value.idIsChangedName,
                         onEvent = viewModel::onEvent,
                         swipeRefreshState = swipeRefreshState
                     )

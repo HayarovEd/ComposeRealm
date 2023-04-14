@@ -150,7 +150,7 @@ fun ItemCamera(
                                 changeStatusFavorite(
                                     currentStatus = camera.isFavorite ?: true
                                 ),
-                                id = camera.id?: 100
+                                id = camera.id?: -1000
                             )
                         )
                     }

@@ -51,6 +51,13 @@ class MainViewModel @Inject constructor(private val repo: Repo) : ViewModel() {
                 }
                 getData()
             }
+            is MainEvent.ToggleVisibleFieldName -> {
+                _state.update { currentState ->
+                    currentState.copy(
+                        idIsChangedName = event.id
+                    )
+                }
+            }
         }
     }
 
@@ -73,7 +80,7 @@ class MainViewModel @Inject constructor(private val repo: Repo) : ViewModel() {
                                 _state.update { currentState ->
                                     currentState.copy(
                                         isLoading = false,
-                                        roomswithCamers = resultCamera.data?: emptyList()
+                                        roomsWithCameras = resultCamera.data?: emptyList()
                                     )
                                 }
 
